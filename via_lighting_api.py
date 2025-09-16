@@ -6,6 +6,7 @@ following the VIA version 12 protocol.
 import hid
 import colorsys
 import argparse
+import platform
 from tools.keyboard_info_viewer import list_devices
 
 """Global constants"""
@@ -42,6 +43,8 @@ class ViaLightingAPI:
         self.device_path = self.__find_device_path(vid, pid)
         if self.device_path is None:
             raise self.DeviceNotFoundError("Device not found or does not support VIA.")
+        
+        self.host_os = platform.system()
 
     @staticmethod
     def __find_device_path(vendor_id, product_id):
@@ -69,7 +72,7 @@ class ViaLightingAPI:
         :param data: command bytes (array)
         :return: None
         """
-        padded_data = data + [0] * (RAW_HID_BUFFER_SIZE - len(data))
+        padded_data = ([0] if self.host_os == "Windows" else []) + data + [0] * (RAW_HID_BUFFER_SIZE - len(data))
         h = hid.device()
         h.open_path(self.device_path)
         try:
